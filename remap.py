@@ -37,13 +37,13 @@ def getScaleOffset (resolution): #(path):
     scale_factor_x = [0.000014, 0.000028, 0.000056, 0.0000112, 0.000280]
     if resolution ==0.5 : 
         i=0
-    else if resolution == 1 :
+    elif resolution == 1 :
         i=1
-    else if resolution == 2 :
+    elif resolution == 2 :
         i=2
-    else if resolution == 4 :
+    elif resolution == 4 :
         i=3
-    else if resolution == 10 :
+    elif resolution == 10 :
         i=4
     else: 
         print('Offset and Scale factor are not known for this resolution.')
