@@ -58,7 +58,82 @@ def getScaleOffset (resolution): #(path):
     #nc.close()
     return scale, offset
     
-def remap(path, extent, resolution, x1, y1, x2, y2): 
+def remap(ds, extent, resolution, x1, y1, x2, y2): 
+
+    
+    # Calculate the image extent required for the reprojection
+    H = ds.goes_imager_projection.attrs['perspective_point_height'][0]
+    x1 = ds.x_image_bounds.isel(time=0)[0].data * H 
+    x2 = ds.x_image_bounds.isel(time=0)[1].data * H 
+    y1 = ds.y_image_bounds.isel(time=0)[1].data * H 
+    y2 = ds.y_image_bounds.isel(time=0)[0].data * H 
+    
+    # GOES-16 Extent (satellite projection) [llx, lly, urx, ury]
+    GOES16_EXTENT = [x1, y1, x2, y2]
+    
+    # Setup NetCDF driver
+    gdal.SetConfigOption('GDAL_NETCDF_BOTTOMUP', 'NO')
+        
+    # Read scale/offset from file
+    scale, offset = getScaleOffset(resolution) #(path)
+         
+    try:  
+        connectionInfo = 'NETCDF:\"' + path + '\":CMI'    
+        # Open NetCDF file (GOES-16 data)  
+        raw = gdal.Open(connectionInfo)
+    except:
+        connectionInfo = 'HDF5:\"' + path + '\"://CMI'    
+        # Open NetCDF file (GOES-16 data)  
+        raw = gdal.Open(connectionInfo)    
+                
+    # Setup projection and geo-transformation
+    raw.SetProjection(sourcePrj.ExportToWkt())
+    #raw.SetGeoTransform(getGeoT(GOES16_EXTENT, raw.RasterYSize, raw.RasterXSize))
+    raw.SetGeoTransform(getGeoT(GOES16_EXTENT, raw.RasterYSize, raw.RasterXSize))  
+  
+    #print (KM_PER_DEGREE)
+    # Compute grid dimension
+    sizex = int(((extent[2] - extent[0]) * KM_PER_DEGREE) / resolution)
+    sizey = int(((extent[3] - extent[1]) * KM_PER_DEGREE) / resolution)
+    
+    # Get memory driver
+    memDriver = gdal.GetDriverByName('MEM')
+   
+    # Create grid
+    grid = memDriver.Create('grid', sizex, sizey, 1, gdal.GDT_Float32)
+    
+    # Setup projection and geo-transformation
+    grid.SetProjection(targetPrj.ExportToWkt())
+    grid.SetGeoTransform(getGeoT(extent, grid.RasterYSize, grid.RasterXSize))
+
+    # Perform the projection/resampling 
+
+    print ('Remapping', path)
+        
+    start = t.time()
+    
+    gdal.ReprojectImage(raw, grid, sourcePrj.ExportToWkt(), targetPrj.ExportToWkt(), gdal.GRA_NearestNeighbour, options=['NUM_THREADS=ALL_CPUS']) 
+    
+    print ('- finished! Time:', t.time() - start, 'seconds')
+    
+    # Close file
+    raw = None
+        
+    # Read grid data
+    array = grid.ReadAsArray()
+    
+    # Mask fill values (i.e. invalid values)
+    np.ma.masked_where(array, array == -1, False)
+    
+    # Apply scale and offset
+    array = array * scale + offset
+    
+    grid.GetRasterBand(1).SetNoDataValue(-1)
+    grid.GetRasterBand(1).WriteArray(array)
+
+    return grid
+
+def remap_old(path, extent, resolution, x1, y1, x2, y2): 
     
     # GOES-16 Extent (satellite projection) [llx, lly, urx, ury]
     GOES16_EXTENT = [x1, y1, x2, y2]
