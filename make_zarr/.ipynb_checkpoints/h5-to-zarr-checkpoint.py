@@ -235,10 +235,10 @@ if __name__ == '__main__':
         '%(levelname)s:%(name)s:%(funcName)s:%(message)s'))
     lggr.addHandler(lggr_handler)
 
-    with fsspec.open('s3://ohw-bucket/goes_east_test.nc',
+    with fsspec.open('s3://pangeo-data-uswest2/esip/adcirc/adcirc_01d.nc',
                      mode='rb', anon=False, requester_pays=True,
                      default_fill_cache=False) as f:
-        store = zarr.DirectoryStore('../goes_east_test.nc.chunkstore')
+        store = zarr.DirectoryStore('../adcirc_01d.nc.chunkstore')
         h5chunks = Hdf5ToZarr(f, store, xarray=True)
         h5chunks.translate()
 
