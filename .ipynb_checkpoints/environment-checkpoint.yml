@@ -1,0 +1,55 @@
+name: gapfree
+channels:
+  - conda-forge
+dependencies:
+  - python=3.8
+  - pangeo-notebook=2020.06.03
+  - argopy
+  - bokeh
+  - bottleneck
+  - cartopy <0.18
+  - cdsapi
+  - cf-units
+  - cf_xarray
+  - colorcet
+  - compilers
+  - ctd
+  - dask
+  - datashader
+  - descartes
+  - erddapy
+  - geolinks
+  - geopandas
+  - geoviews
+  - gsw
+  - h5netcdf
+  - holoviews
+  - hvplot
+  - intake
+  - ioos-tools
+  - ioos_qc
+  - ipyleaflet
+  - jupyter
+  - jupyterlab
+  - matplotlib-base
+  - nc-time-axis
+  - netcdf4
+  - numpy
+  - palettable
+  - pandas<1.1
+  - panel
+  - param
+  - podaacpy
+  - pyoos
+  - rasterio
+  - requests
+  - retrying
+  - s3fs
+  - scipy
+  - seaborn
+  - seawater
+  - shapely
+  - siphon
+  - xarray
+  - xlrd
+  - zarr
