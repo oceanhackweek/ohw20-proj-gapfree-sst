@@ -45,6 +45,7 @@ dependencies:
   - rasterio
   - requests
   - retrying
+  - satpy
   - s3fs
   - scipy
   - seaborn
